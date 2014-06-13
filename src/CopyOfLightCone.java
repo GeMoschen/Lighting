@@ -53,9 +53,7 @@ public class CopyOfLightCone {
     }
 
     public void render(List<Block> blocks, Shader coneShader, Shader ambientShader, int width, int height) {
-        
 
-        
         // enable stencil
         glColorMask(false, false, false, false);
         glStencilFunc(GL_ALWAYS, 1, 1);
@@ -88,7 +86,8 @@ public class CopyOfLightCone {
         glUniform2f(glGetUniformLocation(coneShader.getID(), "lightLocation"), this.location.getX(), height - this.location.getY());
         glUniform3f(glGetUniformLocation(coneShader.getID(), "lightColorOne"), 0.1f, 0.4f, 0.0f);
         glUniform3f(glGetUniformLocation(coneShader.getID(), "lightColorTwo"), 0.05f, 0.2f, 0.0f);
-//        glUniform1f(glGetUniformLocation(coneShader.getID(), "intensity"), this.intensity);
+        // glUniform1f(glGetUniformLocation(coneShader.getID(), "intensity"),
+        // this.intensity);
 
         // enable blending
         glEnable(GL_BLEND);

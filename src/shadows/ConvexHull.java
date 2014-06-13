@@ -81,7 +81,7 @@ public class ConvexHull {
             }
             glEnd();
 
-                glClear(GL_DEPTH_BUFFER_BIT);
+            glClear(GL_DEPTH_BUFFER_BIT);
             glColor4f(0.5f, 0.5f, 0.5f, 1f);
             glBegin(GL_POLYGON);
             {

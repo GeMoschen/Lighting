@@ -118,7 +118,7 @@ public class Main {
         }
 
         coneShader = new Shader();
-        coneShader.loadPixelShader("viewcone.frag");
+        coneShader.loadPixelShader("basicLight.frag");
 
         ambientShader = new Shader();
         ambientShader.loadPixelShader("ambientLight.frag");

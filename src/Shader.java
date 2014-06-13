@@ -1,5 +1,4 @@
 
-
 import static org.lwjgl.opengl.GL20.*;
 
 import java.io.DataInputStream;
