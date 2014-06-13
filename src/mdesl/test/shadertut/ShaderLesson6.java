@@ -7,6 +7,7 @@ import static org.lwjgl.opengl.GL20.*;
 
 import java.io.IOException;
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
 
 import mdesl.graphics.SpriteBatch;
 import mdesl.graphics.Texture;
@@ -102,7 +103,23 @@ public class ShaderLesson6 extends SimpleGame {
 
     protected void render() throws LWJGLException {
         super.render();
+        for (int i = 0; i < 2; i++) {
+            renderBatch(0, i * 150, 1);
+            renderBatch(200, i * 150, 4);
+            renderBatch(400, i * 150, 8);
+            renderBatch(600, i * 150, 16f);
+        }
 
+        // bind normal map to texture unit 1
+        glActiveTexture(GL_TEXTURE1);
+        rockNormals.bind();
+
+        // bind diffuse color to texture unit 0
+        glActiveTexture(GL_TEXTURE0);
+        rock.bind();
+    }
+
+    public void renderBatch(float posX, float posY, float shininess) {
         batch.begin();
 
         // shader will now be in use...
@@ -110,36 +127,44 @@ public class ShaderLesson6 extends SimpleGame {
         // update light position, normalized to screen resolution
         float x = Mouse.getX() / (float) Display.getWidth();
         float y = Mouse.getY() / (float) Display.getHeight();
-        LIGHT_POS.x = x;
-        LIGHT_POS.y = y;
+        float intens = 1f;
 
-        Vector4f light_0_col = new Vector4f(1, 0, 0, 0.5f);
-        Vector3f light_0_pos = new Vector3f((50f / 600f), (50f / 600f), LIGHT_POS.z);
+        ArrayList<Vector4f> lightColor = new ArrayList<Vector4f>();
+        lightColor.add(new Vector4f(1, 1, 0, intens));
+        lightColor.add(new Vector4f(1, 0, 0, intens));
+        lightColor.add(new Vector4f(0, 1, 0, intens));
+        lightColor.add(new Vector4f(0, 0, 1, 1));
+        lightColor.add(new Vector4f(1f, 1f, 1f, intens));
 
-        Vector4f light_1_col = new Vector4f(0, 1, 0, 0.5f);
-        Vector3f light_1_pos = new Vector3f((50f / 600f), (550f / 600f), LIGHT_POS.z);
+        shader.setUniformi("lightCount", 5);
+        shader.setUniformf("shininess", shininess);
 
-        Vector4f light_2_col = new Vector4f(0, 0, 1, 0.5f);
-        Vector3f light_2_pos = new Vector3f((550f / 600f), (550f / 600f), LIGHT_POS.z);
+        shader.setUniformf("LightPos[0]", new Vector3f(x, y, LIGHT_POS.z));
+        shader.setUniformf("LightColor[0]", lightColor.get(4));
 
-        Vector4f light_3_col = new Vector4f(1, 1, 1, 0.5f);
-        Vector3f light_3_pos = new Vector3f((550f / 600f), (50f / 600f), LIGHT_POS.z);
+        shader.setUniformf("LightPos[1]", new Vector3f(100f / 800f, ((600f - 150f) / 600f), LIGHT_POS.z));
+        shader.setUniformf("LightColor[1]", lightColor.get(0));
 
-        shader.setUniformi("lightCount", 4);
+        shader.setUniformf("LightPos[2]", new Vector3f(300f / 800f, ((600f - 150f) / 600f), LIGHT_POS.z));
+        shader.setUniformf("LightColor[2]", lightColor.get(1));
 
-        shader.setUniformf("LightPos[0]", light_0_pos);
-        shader.setUniformf("LightColor[0]", light_0_col);
+        shader.setUniformf("LightPos[3]", new Vector3f(500f / 800f, ((600f - 150f) / 600f), LIGHT_POS.z));
+        shader.setUniformf("LightColor[3]", lightColor.get(2));
 
-        shader.setUniformf("LightPos[1]", light_1_pos);
-        shader.setUniformf("LightColor[1]", light_1_col);
+        shader.setUniformf("LightPos[4]", new Vector3f(700f / 800f, ((600f - 150f) / 600f), LIGHT_POS.z));
+        shader.setUniformf("LightColor[4]", lightColor.get(3));
 
-        shader.setUniformf("LightPos[2]", light_2_pos);
-        shader.setUniformf("LightColor[2]", light_2_col);
+        shader.setUniformf("AmbientColor", 255f / 255f, 255f / 255f, 255f / 255f, 0.4f);
 
-        shader.setUniformf("LightPos[3]", light_3_pos);
-        shader.setUniformf("LightColor[3]", light_3_col);
-
-        shader.setUniformf("AmbientColor", 130f / 255f, 135f / 255f, 180f / 255f, 0.3f);
+        // shader.setUniformf("Falloff[1]", new Vector3f(0.1f, 1f, 32f));
+        // shader.setUniformf("Falloff[1]", new Vector3f(1f, 1f, 0.1f));
+        // shader.setUniformf("Falloff[2]", new Vector3f(2f, 4f, 8f));
+        // shader.setUniformf("Falloff[3]", new Vector3f(2f, 4f, 8f));
+        // shader.setUniformf("Falloff[4]", new Vector3f(0.1f, 1f, 32f));
+        // shader.setUniformf("Falloff[5]", new Vector3f(0.1f, 1f, 32f));
+        for (int i = 0; i < 5; i++) {
+            shader.setUniformf("Falloff[" + i + "]", new Vector3f(0.1f, 4f, 16f));
+        }
 
         // bind normal map to texture unit 1
         glActiveTexture(GL_TEXTURE1);
@@ -150,9 +175,9 @@ public class ShaderLesson6 extends SimpleGame {
         rock.bind();
 
         // draw the texture unit 0 with our shader effect applied
-        batch.draw(rock, 0, 0, 800, 600);
-
+        batch.draw(rock, posX, posY, 200, 150);
         batch.end();
+
     }
 
     public void mousePressed(int x, int y, int button) {
