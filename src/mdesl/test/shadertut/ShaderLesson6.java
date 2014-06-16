@@ -103,12 +103,12 @@ public class ShaderLesson6 extends SimpleGame {
 
     protected void render() throws LWJGLException {
         super.render();
-        for (int i = 0; i < 2; i++) {
-            renderBatch(0, i * 150, 1);
-            renderBatch(200, i * 150, 4);
-            renderBatch(400, i * 150, 8);
-            renderBatch(600, i * 150, 16f);
-        }
+
+        float shine = 0f;
+        renderBatch(0, 0, shine);
+        renderBatch(300, 0, shine);
+        renderBatch(0, 300, shine);
+        renderBatch(300, 300, shine);
 
         // bind normal map to texture unit 1
         glActiveTexture(GL_TEXTURE1);
@@ -127,34 +127,35 @@ public class ShaderLesson6 extends SimpleGame {
         // update light position, normalized to screen resolution
         float x = Mouse.getX() / (float) Display.getWidth();
         float y = Mouse.getY() / (float) Display.getHeight();
-        float intens = 1f;
+        // LIGHT_POS.z = 0.075f;
 
+        float intens = 3f;
         ArrayList<Vector4f> lightColor = new ArrayList<Vector4f>();
         lightColor.add(new Vector4f(1, 1, 0, intens));
         lightColor.add(new Vector4f(1, 0, 0, intens));
         lightColor.add(new Vector4f(0, 1, 0, intens));
-        lightColor.add(new Vector4f(0, 0, 1, 1));
+        lightColor.add(new Vector4f(0, 0, 1, intens));
         lightColor.add(new Vector4f(1f, 1f, 1f, intens));
 
-        shader.setUniformi("lightCount", 5);
+        shader.setUniformi("lightCount", 1);
         shader.setUniformf("shininess", shininess);
 
         shader.setUniformf("LightPos[0]", new Vector3f(x, y, LIGHT_POS.z));
         shader.setUniformf("LightColor[0]", lightColor.get(4));
 
-        shader.setUniformf("LightPos[1]", new Vector3f(100f / 800f, ((600f - 150f) / 600f), LIGHT_POS.z));
+        shader.setUniformf("LightPos[1]", new Vector3f(300f / 800f, ((600f - 300f) / 600f), LIGHT_POS.z));
         shader.setUniformf("LightColor[1]", lightColor.get(0));
 
-        shader.setUniformf("LightPos[2]", new Vector3f(300f / 800f, ((600f - 150f) / 600f), LIGHT_POS.z));
+        shader.setUniformf("LightPos[2]", new Vector3f(500f / 800f, ((600f - 100f) / 600f), LIGHT_POS.z));
         shader.setUniformf("LightColor[2]", lightColor.get(1));
 
-        shader.setUniformf("LightPos[3]", new Vector3f(500f / 800f, ((600f - 150f) / 600f), LIGHT_POS.z));
+        shader.setUniformf("LightPos[3]", new Vector3f(100f / 800f, ((600f - 500f) / 600f), LIGHT_POS.z));
         shader.setUniformf("LightColor[3]", lightColor.get(2));
 
-        shader.setUniformf("LightPos[4]", new Vector3f(700f / 800f, ((600f - 150f) / 600f), LIGHT_POS.z));
+        shader.setUniformf("LightPos[4]", new Vector3f(500f / 800f, ((600f - 500f) / 600f), LIGHT_POS.z));
         shader.setUniformf("LightColor[4]", lightColor.get(3));
 
-        shader.setUniformf("AmbientColor", 255f / 255f, 255f / 255f, 255f / 255f, 0.4f);
+        shader.setUniformf("AmbientColor", 255f / 255f, 255f / 255f, 255f / 255f, .05f);
 
         // shader.setUniformf("Falloff[1]", new Vector3f(0.1f, 1f, 32f));
         // shader.setUniformf("Falloff[1]", new Vector3f(1f, 1f, 0.1f));
@@ -163,7 +164,7 @@ public class ShaderLesson6 extends SimpleGame {
         // shader.setUniformf("Falloff[4]", new Vector3f(0.1f, 1f, 32f));
         // shader.setUniformf("Falloff[5]", new Vector3f(0.1f, 1f, 32f));
         for (int i = 0; i < 5; i++) {
-            shader.setUniformf("Falloff[" + i + "]", new Vector3f(0.1f, 4f, 16f));
+            shader.setUniformf("Falloff[" + i + "]", new Vector3f(0.01f, 4f, 64f));
         }
 
         // bind normal map to texture unit 1
@@ -175,7 +176,7 @@ public class ShaderLesson6 extends SimpleGame {
         rock.bind();
 
         // draw the texture unit 0 with our shader effect applied
-        batch.draw(rock, posX, posY, 200, 150);
+        batch.draw(rock, posX, posY, 400, 400);
         batch.end();
 
     }
@@ -183,6 +184,44 @@ public class ShaderLesson6 extends SimpleGame {
     public void mousePressed(int x, int y, int button) {
         LIGHT_POS.z = DEFAULT_LIGHT_Z;
         System.out.println("New light Z: " + LIGHT_POS.z);
+        if (button == 1) {
+            // load our shader program and sprite batch
+            try {
+                // our basic pass-through vertex shader
+                final String VERT = Util.readFile(Util.getResourceAsStream("lesson6.vert"));
+
+                // our fragment shader, which does the blur in one direction at
+                // a
+                // time
+                final String FRAG = Util.readFile(Util.getResourceAsStream("lesson6.frag"));
+
+                // create our shader program
+                ShaderProgram.setStrictMode(false);
+                shader = new ShaderProgram(VERT, FRAG, SpriteBatch.ATTRIBUTES);
+
+                // Good idea to log any warnings if they exist
+                if (shader.getLog().length() != 0)
+                    System.out.println(shader.getLog());
+
+                // always a good idea to set up default uniforms...
+                shader.use();
+
+                // our normal map
+                shader.setUniformi("u_normals", 1); // GL_TEXTURE1
+
+                // light/ambient colors
+                shader.setUniformf("LightColor", LIGHT_COLOR);
+                shader.setUniformf("AmbientColor", AMBIENT_COLOR);
+                shader.setUniformf("Falloff", FALLOFF);
+
+                batch = new SpriteBatch(shader);
+                this.resize();
+            } catch (Exception e) {
+                // simple exception handling...
+                e.printStackTrace();
+                System.exit(0);
+            }
+        }
     }
 
     public void mouseWheelChanged(int delta) {

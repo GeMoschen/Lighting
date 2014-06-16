@@ -38,23 +38,33 @@ void main() {
 		float D = length(LightDir);
 		
 		//normalize our vectors
-		vec3 N = normalize(NormalMap * 2.0 - 1.0);
+		vec3 N = normalize(NormalMap* 2.0 - 1.0);
 		vec3 L = normalize(LightDir);
 		
 		//Pre-multiply light color with intensity
 		//Then perform "N dot L" to determine our diffuse term
-		//vec3 Diffuse = (LightColor[i].rgb * LightColor[i].a * lightCount  * max(dot(N, L), 0.0 )  * pow(max(0.0, dot(N, L)), shininess));
+		//vec3 Diffuse = (LightColor[i].rgb * LightColor[i].a * lightCount  * max(dot(N, L), 0.0 )  * pow(max(0.0, dot(N, L)), shininess));		
+		//vec3 Diffuse = (LightColor[i].rgb * pow(max(0.0, dot(N, L)), shininess) * LightColor[i].a * lightCount ) * max(dot(L, N), 0.0 );
 		
-		vec3 Diffuse = (LightColor[i].rgb * pow(max(0.0, dot(N, L)), shininess) * LightColor[i].a * lightCount ) * max(dot(L, N), 0.0 );
+		
+		// specular
+ 		float specularCoefficient = pow(max(0.0, dot(N, L)), shininess) * 1 / LightColor[i].a;
+		
+		// diffuse
+	 	vec3 Diffuse = (LightColor[i].rgb * LightColor[i].a) * max(dot(L, N), 0.0) * 1 / LightColor[i].a;
+		//vec3 specular = specularCoefficient *  LightColor[i].a * LightColor[i].rgb * (DiffuseColor.rgb  * shininess / 32 * LightColor[i].z ) ;
+		vec3 specular = specularCoefficient *  (LightColor[i].rgb * LightColor[i].a * NormalMap.rgb * LightColor[i].a);
 		
 		// > NICE
-		//vec3 Diffuse = (LightColor[i].rgb * LightColor[i].a * lightCount ) *  (pow(max(0.0, dot(N, L)), shininess)) ;
-		
+		//vec3 Diffuse = (LightColor[i].rgb * LightColor[i].a *  pow(max(0.0, dot(N, L)), shininess)) ;
+		//vec3 specular = specularCoefficient * LightColor[i].a * LightColor[i].rgb * (vec3(1, 1, 1) * shininess / 64) * LightPos[i].z;
+	
+	// (LightPos[i].z + (LightColor[i].a * (1+specularCoefficient)))
 		//calculate attenuation
-		float Attenuation = (1)/ ( Falloff[i].x + (Falloff[i].y*D) + (Falloff[i].z*D*D));
+		float Attenuation = (LightPos[i].z + (LightColor[i].a * (1+specularCoefficient))) / ( Falloff[i].x + (Falloff[i].y*D) + (Falloff[i].z*D*D));
 		
 		//the calculation which brings it all together
-		vec3 Intensity = (Ambient + Diffuse * Attenuation) / lightCount;
+		vec3 Intensity = (Diffuse + specular) * Attenuation + (Ambient / lightCount);
 		vec3 FinalColor = DiffuseColor.rgb * Intensity;		
 	
 		sum += FinalColor;
