@@ -48,23 +48,24 @@ void main() {
 		
 		
 		// specular
- 		float specularCoefficient = pow(max(0.0, dot(N, L)), shininess) * 1 / LightColor[i].a;
+		float shine = shininess * 256;
+ 		float specularCoefficient = pow(max(0.0, dot(N, L)), shine);
 		
 		// diffuse
-	 	vec3 Diffuse = (LightColor[i].rgb * LightColor[i].a) * max(dot(L, N), 0.0) * 1 / LightColor[i].a;
+	 	vec3 Diffuse = (LightColor[i].rgb * LightColor[i].a) * max(dot(L, N), 0.0);
 		//vec3 specular = specularCoefficient *  LightColor[i].a * LightColor[i].rgb * (DiffuseColor.rgb  * shininess / 32 * LightColor[i].z ) ;
-		vec3 specular = specularCoefficient *  (LightColor[i].rgb * LightColor[i].a * NormalMap.rgb * LightColor[i].a);
+		vec3 specular = specularCoefficient * (LightColor[i].rgb * LightColor[i].a);
 		
 		// > NICE
 		//vec3 Diffuse = (LightColor[i].rgb * LightColor[i].a *  pow(max(0.0, dot(N, L)), shininess)) ;
 		//vec3 specular = specularCoefficient * LightColor[i].a * LightColor[i].rgb * (vec3(1, 1, 1) * shininess / 64) * LightPos[i].z;
 	
-	// (LightPos[i].z + (LightColor[i].a * (1+specularCoefficient)))
 		//calculate attenuation
-		float Attenuation = (LightPos[i].z + (LightColor[i].a * (1+specularCoefficient))) / ( Falloff[i].x + (Falloff[i].y*D) + (Falloff[i].z*D*D));
+		//(LightPos[i].z + (LightColor[i].a))
+		float Attenuation = (1) / ( Falloff[i].x + (Falloff[i].y*D) + (Falloff[i].z*D*D));
 		
 		//the calculation which brings it all together
-		vec3 Intensity = (Diffuse + specular) * Attenuation + (Ambient / lightCount);
+		vec3 Intensity =  (specular + (Diffuse) + (Ambient / lightCount)) * Attenuation;
 		vec3 FinalColor = DiffuseColor.rgb * Intensity;		
 	
 		sum += FinalColor;

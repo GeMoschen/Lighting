@@ -104,7 +104,7 @@ public class ShaderLesson6 extends SimpleGame {
     protected void render() throws LWJGLException {
         super.render();
 
-        float shine = 0f;
+        float shine = 1f;
         renderBatch(0, 0, shine);
         renderBatch(300, 0, shine);
         renderBatch(0, 300, shine);
@@ -129,7 +129,7 @@ public class ShaderLesson6 extends SimpleGame {
         float y = Mouse.getY() / (float) Display.getHeight();
         // LIGHT_POS.z = 0.075f;
 
-        float intens = 3f;
+        float intens = 5f;
         ArrayList<Vector4f> lightColor = new ArrayList<Vector4f>();
         lightColor.add(new Vector4f(1, 1, 0, intens));
         lightColor.add(new Vector4f(1, 0, 0, intens));
@@ -137,7 +137,7 @@ public class ShaderLesson6 extends SimpleGame {
         lightColor.add(new Vector4f(0, 0, 1, intens));
         lightColor.add(new Vector4f(1f, 1f, 1f, intens));
 
-        shader.setUniformi("lightCount", 1);
+        shader.setUniformi("lightCount", 5);
         shader.setUniformf("shininess", shininess);
 
         shader.setUniformf("LightPos[0]", new Vector3f(x, y, LIGHT_POS.z));
